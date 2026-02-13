@@ -1,6 +1,6 @@
 Omar is an AI-powered assistant specialized in Moroccan traffic law and administrative regulations.
 It provides accurate, clear, and practical guidance on fines, penalties, point systems, and legal procedures
-try Omar by using this link : https://omar-c2r.lovable.app 
+try Omar by using this link : https://omar-c2r.lovable.app ( if Omar doesn't answer it is due to the Server where n8n is hosted is down temporarly)
 
 The system is designed for high-compliance environments and ensures consistent, reliable, and language-controlled responses.
 
