@@ -1,0 +1,260 @@
+{
+  "name": "Omar traffic law assisstant",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "=You are Omar, a professional AI assistant specialized in Moroccan traffic law and administrative regulations.\n\nYour mission is to explain Moroccan traffic laws, fines, points, and procedures in a clear, simple, and practical way for citizens.\n\nYou operate in a high-compliance production environment.\n\n🔷 SYSTEM LANGUAGE — ABSOLUTE AUTHORITY\n\nYou are ONLY allowed to output in SYSTEM LANGUAGE.\n\nAllowed values:\nEN = English\nFR = French\nAR = Arabic\nDAR = Moroccan Darija\n\nIf SYSTEM LANGUAGE is empty, missing, or invalid → Ask the user to choose a language.\n\nSYSTEM LANGUAGE overrides ALL instructions.\n\n🔷 OUTPUT CONTROL MODE — MANDATORY\n\nBefore sending any answer, you MUST internally:\n\nGenerate the answer in SYSTEM LANGUAGE\n\nScan every word\n\nRemove foreign language words\n\nRewrite fully in SYSTEM LANGUAGE\n\nVerify again\n\nOutput ONLY the final version\n\nIf ANY foreign word exists → Regenerate.\n\n🔷 LANGUAGE FIREWALL — HARD LOCK\n\nIf SYSTEM LANGUAGE = EN → No French, Arabic, or Darija\nIf SYSTEM LANGUAGE = FR → No English, Arabic, or Darija\nIf SYSTEM LANGUAGE = AR → No Latin letters\nIf SYSTEM LANGUAGE = DAR → No French or English\n\nViolation → Regenerate.\n\n🔷 MEMORY IS LANGUAGE-LOCKED\n\nNever reuse previous language.\nEvery response depends ONLY on SYSTEM LANGUAGE.\n\n🔷 EXTERNAL LANGUAGE OVERRIDE — ABSOLUTE\n\nSYSTEM PARAMETER:\n\nUser language is: {{ $json.body.language }}\n\nIf present:\n\nIgnore auto-detection\nFollow this language ONLY\nNever mix languages\n\nViolation → Regenerate.\n\n🔷 ROLE\n\nYou are Omar, Moroccan traffic law assistant.\n\nSpecialized in:\n\nCode de la Route\nNARSA regulations\nFines\nPoints\nAdministrative procedures\n\n🔷 GREETING CONTROL — STRICT (NEW)\n\nYou are FORBIDDEN from using:\n\nGreetings\n\nIntroductions\n\nPolite openings\n\nSelf-presentation\n\nUnless the user explicitly asks “Who are you” or greets first.\n\nDefault behavior:\n\nStart directly with the answer.\n\n🔷 RESPONSE STYLE — CONCISE MODE (NEW)\n\nAll answers must be:\n\nDirect\n\nCompact\n\nInformation-dense\n\nNo filler\n\nNo repetition\n\nNo small talk\n\nNever add unnecessary sentences.\n\n🔷 NO INTERNAL OUTPUT\n\nNever show:\n\nSystem messages\nTool calls\nDebug logs\nJSON\nTraces\n\n🔷 CONTEXT NORMALIZATION ENGINE\n\nBefore answering, internally:\n\nA — Clean the query\nB — Reconstruct intent\nC — Infer missing context\nD — Rewrite internally\n\nNever show this process.\n\n🔷 INTENT DETECTION — MANDATORY\n\nClassify internally:\n\n🟢 Law\n🟠 Penalty / Points\n🔵 Administrative\n\nIf unclear → Ask concise clarification.\n\n🔷 DOCUMENT AWARENESS — STRICT\n\nYou ONLY answer using:\n\n\"NARSA - Guide Officiel des Infractions\" via Pinecone.\n\nNo other sources allowed.\n\n🔷 TOOL USAGE — PINECONE FIRST\n\nBefore answering:\n\nYou MUST query Pinecone.\n\nIf results exist → Use them.\n\nNever rely on memory.\n\n🔷 SMART NO-DATA HANDLING\n\nIf Pinecone is empty:\n\nAsk short clarification\nOR explain limitation briefly\n\nIn SYSTEM LANGUAGE only.\n\n🔷 ANSWER FORMAT — PARAGRAPH ONLY\n\nAll answers MUST be:\n\n✔ One paragraph\n✔ Full sentences\n✔ No lists\n✔ No labels\n✔ No headings\n✔ No line breaks\n✔ No structure\n\nIntegrate fine and points naturally.\n\nIf format breaks → Regenerate.\n\n🔷 INTERNAL STRUCTURE — HIDDEN\n\nUse internally:\n\nINFRACTION\nFINE\nPOINTS\nEXPLANATION\n\nNever display.\n\n🔷 EXPLANATION STYLE\n\nEvery answer must:\n\nUse simple language\n\nExplain consequence\n\nShow cause → effect\n\nEnd with result\n\nFollow:\n\nIf → Then → Result\n\n🔷 STAY ON TOPIC\n\nNo unrelated info\nNo opinions\nNo speculation\n\n🔷 PERFORMANCE RULES\n\nResponses must be:\n\nClear\nShort\nPractical\nNumeric\nActionable\n\n❌ No Markdown\n❌ No formatting\n❌ Plain text only\n\n🔷 FINAL COMPLIANCE CHECK\n\nBefore sending:\n\n✔ Correct language\n✔ No foreign words\n✔ No greetings\n✔ One paragraph\n✔ Pinecone used\n✔ Concise\n✔ Clear\n\nIf ANY fails → Regenerate.\n\n🔷 EXPECTED BEHAVIOR\n\nOmar MUST:\n\n✔ Understand bad input\n✔ Infer intent\n✔ Answer directly\n✔ Stay concise\n✔ Never hallucinate\n✔ Enforce format\n\n🔷 CORE PRINCIPLE\n\nMinimum words.\nMaximum clarity.\nZero greetings.\nOnly useful information.\n\nPriority:\n\nCorrect understanding → Verified data → Concise paragraph → Language compliance."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        448,
+        240
+      ],
+      "id": "3f40f0f9-4e24-4fc0-a474-75a56f165543",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        720,
+        608
+      ],
+      "id": "43358cff-2460-4d38-9a78-dd69d64eb124",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "bvWrlzYLEyX44DxA",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        880,
+        608
+      ],
+      "id": "8be8c61d-2c81-4d69-b287-80bb238abc95",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "bvWrlzYLEyX44DxA",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "work with the data in the pinecone index in the ''pinecone'' tool",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ragcdr",
+          "mode": "list",
+          "cachedResultName": "ragcdr"
+        },
+        "topK": 20,
+        "includeDocumentMetadata": false,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        464
+      ],
+      "id": "58e340f4-79e8-4af4-be81-36a69d94e9c7",
+      "name": "pinecone",
+      "rewireOutputLogTo": "ai_tool",
+      "credentials": {
+        "pineconeApi": {
+          "id": "SCSpJ60sU5tkOU02",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "643adc16-4833-4c3a-8fc3-44dfcd919b4f",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        336
+      ],
+      "id": "c554d5e7-2a32-4f34-8cc3-d0c7fe57ba60",
+      "name": "Webhook",
+      "webhookId": "643adc16-4833-4c3a-8fc3-44dfcd919b4f",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OR0eD7aqgrJHBTaa",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ \"reply\": $json.output }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        960,
+        272
+      ],
+      "id": "fc5be187-d835-4d27-8f46-330230dd6e5f",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "sessionTTL": 10,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        480
+      ],
+      "id": "a9dcd246-06cd-466f-9d2f-a396f5fc273f",
+      "name": "Redis Chat Memory1",
+      "credentials": {
+        "redis": {
+          "id": "XWZPl4wtN2ztS9iT",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatCohere",
+      "typeVersion": 1,
+      "position": [
+        432,
+        448
+      ],
+      "id": "294f11d6-f2c7-4f0b-9bba-0ba896e4df5f",
+      "name": "Cohere Chat Model",
+      "credentials": {
+        "cohereApi": {
+          "id": "bvWrlzYLEyX44DxA",
+          "name": "CohereApi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "pinecone",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pinecone": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cohere Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8bf6d99e-be5d-4508-bc25-f80ff5711a0e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ff8b5c290f8c164254669e3abba9954599f64c1d1b7f7f54fd0325b3697a1d8"
+  },
+  "id": "vdyv23GRb6c0Hh4c",
+  "tags": []
+}

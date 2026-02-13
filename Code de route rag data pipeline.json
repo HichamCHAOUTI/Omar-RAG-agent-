@@ -1,0 +1,248 @@
+{
+  "name": "Code de route rag data pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 12
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1wP_lTvd28FrSEY0F5e9Rl-FyPa4CdmcU",
+          "mode": "list",
+          "cachedResultName": "Code de route rag ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1wP_lTvd28FrSEY0F5e9Rl-FyPa4CdmcU"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b5361e0d-5d0f-4bf1-a800-c84157ef3b0b",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1V3fimAhq2w4R0iB",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.webContentLink }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6acf024e-1b1f-4cdb-ab2b-078ba4afbf7d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// =============================\n// INPUT\n// =============================\nlet text = $json.text || \"\";\n\n\n// =============================\n// 1. Normalize line endings\n// =============================\ntext = text.replace(/\\r\\n|\\r/g, \"\\n\");\n\n\n// =============================\n// 2. Remove obvious noise blocks\n// =============================\n\n// Page numbers alone\ntext = text.replace(/^\\s*\\d+\\s*$/gm, \"\");\n\n// Repeated government header\ntext = text.replace(/الأمانة العامة للحكومة/g, \"\");\n\n// Gazette / legal metadata\ntext = text.replace(/ج\\.ر عدد.*$/gm, \"\");\ntext = text.replace(/الظهير الشريف.*$/gm, \"\");\ntext = text.replace(/\\(.*?ج\\.ر.*?\\)/g, \"\");\n\n\n// =============================\n// 3. Remove excessive spaces\n// =============================\ntext = text.replace(/[ \\t]+/g, \" \");\ntext = text.replace(/\\n{3,}/g, \"\\n\\n\");\n\n\n// =============================\n// 4. Arabic normalization\n// =============================\nconst arabicMap = {\n  \"إ\": \"ا\",\n  \"أ\": \"ا\",\n  \"آ\": \"ا\",\n  \"ى\": \"ي\",\n  \"ؤ\": \"و\",\n  \"ئ\": \"ي\",\n  \"ـ\": \"\"\n};\n\nfor (const k in arabicMap) {\n  text = text.replace(new RegExp(k, \"g\"), arabicMap[k]);\n}\n\n\n// =============================\n// 5. Fix common OCR mistakes\n// =============================\nconst fixes = {\n  \"مقت�ضى\": \"مقتضى\",\n  \"امل\": \"ال\",\n  \"األ\": \"ال\",\n  \"إل\": \"ال\",\n  \"اال\": \"ال\"\n};\n\nfor (const k in fixes) {\n  text = text.replace(new RegExp(k, \"g\"), fixes[k]);\n}\n\n\n// =============================\n// 6. Standardize article format\n// =============================\n\n// 1 المادة → المادة 1\ntext = text.replace(/(\\d+)\\s+المادة/g, \"المادة $1\");\n\n// Add separators\ntext = text.replace(/المادة\\s+\\d+/g, \"\\n\\n### $& ###\\n\");\n\n\n// =============================\n// 7. Merge broken sentences\n// =============================\ntext = text.replace(/([^\\n])\\n([^\\n#])/g, \"$1 $2\");\n\n\n// =============================\n// 8. Final cleanup\n// =============================\ntext = text\n  .replace(/\\n{2,}/g, \"\\n\\n\")\n  .trim();\n\n\n// =============================\n// OUTPUT\n// =============================\nreturn {\n  json: {\n    cleaned_text: text\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "99998df9-2b6f-496c-a6de-703d0144a544",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ragcdr",
+          "mode": "list",
+          "cachedResultName": "ragcdr"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "9198437f-7ec1-4ba7-8f36-29135a87fe6f",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "SCSpJ60sU5tkOU02",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        784,
+        208
+      ],
+      "id": "8d3814fa-cb9a-4608-8f30-aa08af90464c",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "bvWrlzYLEyX44DxA",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        208
+      ],
+      "id": "7eee894c-29ea-4b2e-9f34-85241114bc45",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 380,
+        "chunkOverlap": 80,
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        352
+      ],
+      "id": "e4dadaec-5088-4b69-9b8e-be1f67337ce0",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "de32d65a-80e9-4033-8bd8-0b9e5cea49d6",
+      "name": "Extract from File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "980d8ca6-7181-4708-ad97-a92ed0b52f10",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ff8b5c290f8c164254669e3abba9954599f64c1d1b7f7f54fd0325b3697a1d8"
+  },
+  "id": "urtB1HITZltBXYhG",
+  "tags": []
+}
